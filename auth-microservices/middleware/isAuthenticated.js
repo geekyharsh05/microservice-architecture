@@ -11,7 +11,7 @@ const isAuthenticated = async (req, res, next) => {
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Not authenticated" });
     }
 
     const decodedUser = verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
