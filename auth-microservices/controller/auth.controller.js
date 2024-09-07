@@ -2,20 +2,21 @@ import prisma from "../db/db.config.js";
 import comparePasswords from "../utils/comparePassword.js";
 import generateHashedPassword from "../utils/generateHashedPassword.js";
 import generateAccessAndRefreshTokens from "../utils/generateAccessAndRefreshTokens.js";
-import options from "../utils/cookieOptions.js";
+import options, { logoutOptions } from "../utils/cookieOptions.js";
 import verifyToken from "../utils/verifyToken.js";
+import authSchema from "../validators/authSchema.js";
 
 class AuthController {
-  
   static async register(req, res) {
     try {
-      const { name, email, password } = req.body;
-
-      if (!name || !email || !password) {
+      const { success, error } = authSchema.signup.safeParse(req.body);
+      if (!success) {
         return res
           .status(400)
-          .json({ message: "Please provide all the required fields" });
+          .json({ message: "Invalid data", error: error.issues });
       }
+
+      const { name, email, password } = req.body;
 
       const existingUser = await prisma.user.findUnique({
         where: {
@@ -50,12 +51,14 @@ class AuthController {
 
   static async login(req, res) {
     try {
-      const { email, password } = req.body;
-      if (!email || !password) {
+      const { success, error } = authSchema.login.safeParse(req.body);
+      if (!success) {
         return res
           .status(400)
-          .json({ message: "Please provide all the required fields" });
+          .json({ message: "Invalid data", error: error.issues });
       }
+
+      const { email, password } = req.body;
 
       const user = await prisma.user.findUnique({
         where: {
@@ -119,6 +122,16 @@ class AuthController {
 
   static async refreshAccessToken(req, res) {
     try {
+      const { success, error } = authSchema.refreshAccessToken.safeParse(
+        req.body
+      );
+
+      if (!success) {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", error: error.issues });
+      }
+
       const incomingRefreshToken =
         req.cookies?.refreshToken || req.body?.refreshToken;
 
@@ -168,7 +181,16 @@ class AuthController {
 
   static async changePassword(req, res) {
     try {
+      const { success, error } = authSchema.changePassword.safeParse(req.body);
+
+      if (!success) {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", error: error.issues });
+      }
+
       const { oldPassword, newPassword } = req.body;
+
       const { id } = req.user;
 
       if (!oldPassword || !newPassword) {
@@ -213,7 +235,7 @@ class AuthController {
   static async logout(req, res) {
     try {
       res
-        .clearCookie("accessToken", { httpOnly: true, secure: true })
+        .clearCookie("accessToken", logoutOptions)
         .json({ message: "Logged out successfully" });
     } catch (error) {
       res
