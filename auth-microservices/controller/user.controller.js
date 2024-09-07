@@ -1,12 +1,17 @@
-class UserController {
-  static async getUsers(req, res) {
-    const { userIds } = req.body;
+import prisma from "../db/db.config.js";
 
-    const users = await prisma.user.findMany({
+class UserController {
+  
+  static async getUserById(req, res) {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Please provide user id" });
+    }
+
+    const user = await prisma.user.findUnique({
       where: {
-        id: {
-          in: userIds,
-        },
+        id: id,
       },
       select: {
         id: true,
@@ -15,33 +20,28 @@ class UserController {
       },
     });
 
-    return res.json({ users: users });
+    return res.json({ user });
   }
 
-  static async getUserById(req, res) {
+  static async getUsers(req, res) {
     try {
-      const { id } = req.params;
-
-      const user = await prisma.user.findUnique({
-        where: {
-          id,
-        },
+      const users = await prisma.user.findMany({
         select: {
           id: true,
           name: true,
           email: true,
           created_at: true,
           updated_at: true,
+          refreshToken: true,
         },
       });
 
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.status(200).json({ user });
+      return res.json({ users });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      console.error("Error fetching users:", error);
+      return res
+        .status(500)
+        .json({ message: "An error occurred while fetching users" });
     }
   }
 }

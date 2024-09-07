@@ -6,6 +6,7 @@ import options from "../utils/cookieOptions.js";
 import verifyToken from "../utils/verifyToken.js";
 
 class AuthController {
+  
   static async register(req, res) {
     try {
       const { name, email, password } = req.body;
