@@ -28,7 +28,7 @@ const isAuthenticated = async (req, res, next) => {
     });
 
     if (!user) {
-      throw new ApiError(401, "Invalid Access Token");
+      return res.status(401).json({ message: "Invalid Access Token" });
     }
 
     req.user = user;
