@@ -13,7 +13,11 @@ const PORT = process.env.PORT ?? 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.POST_MICRO_URL,
+  })
+);
 app.use(morgan("dev"));
 
 app.use("/api/v1", Routes);
