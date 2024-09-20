@@ -1,8 +1,4 @@
-import prisma from "../db/db.config.js";
 import verifyToken from "../utils/verifyToken.js";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const isAuthenticated = async (req, res, next) => {
   try {
@@ -14,25 +10,9 @@ const isAuthenticated = async (req, res, next) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    const decodedUser = verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
+    const payload = await verifyToken(token, process.env.REFRESH_TOKEN_SECRET);
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: decodedUser?.userId,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid Access Token" });
-    }
-
-    req.user = user;
-
+    req.user = payload;
     next();
   } catch (error) {
     return res.status(400).json({ message: "Not authenticated" });
