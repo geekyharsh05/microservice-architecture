@@ -14,7 +14,7 @@ const isAuthenticated = async (req, res, next) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    const decodedUser = verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
+    const decodedUser = verifyToken(token, process.env.REFRESH_TOKEN_SECRET);
 
     const user = await prisma.user.findUnique({
       where: {
