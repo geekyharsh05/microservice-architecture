@@ -1,87 +1,22 @@
-// class PostController {
-//     static async getPosts(req, res) {
-//         try {
-//             const posts = await prisma.post.findMany();
-//             res.status(200).json(posts);
-//         } catch (error) {
-//             res.status(500).json({ message: "Internal server error" });
-//         }
-//     }
+import prisma from "../db/db.config.js";
+import axios from "axios";
+import dotenv from "dotenv";
 
-//     static async getPostById(req, res) {
-//         try {
-//             const { id } = req.params;
-//             const post = await prisma.post.findUnique({
-//                 where: {
-//                     id: id,
-//                 },
-//             });
-//             res.status(200).json(post);
-//         } catch (error) {
-//             res.status(500).json({ message: "Internal server error" });
-//         }
-//     }
-
-//     static async createPost(req, res) {
-//         try {
-//             const { title, content } = req.body;
-//             const post = await prisma.post.create({
-//                 data: {
-//                     title,
-//                     content,
-//                 },
-//             });
-//             res.status(201).json(post);
-//         } catch (error) {
-//             res.status(500).json({ message: "Internal server error" });
-//         }
-//     }
-
-//     static async updatePost(req, res) {
-//         try {
-//             const { id } = req.params;
-//             const { title, content } = req.body;
-//             const post = await prisma.post.update({
-//                 where: {
-//                     id: id,
-//                 },
-//                 data: {
-//                     title,
-//                     content,
-//                 },
-//             });
-//             res.status(200).json(post);
-//         } catch (error) {
-//             res.status(500).json({ message: "Internal server error" });
-//         }
-//     }
-
-//     static async deletePost(req, res) {
-//         try {
-//             const { id } = req.params;
-//             const post = await prisma.post.delete({
-//                 where: {
-//                     id: id,
-//                 },
-//             });
-//             res.status(200).json(post);
-//         } catch (error) {
-//             res.status(500).json({ message: "Internal server error" });
-//         }
-//     }
-// }
+dotenv.config();
 
 class PostController {
   static async index(req, res) {
     try {
+      const posts = await prisma.post.findMany({});
+
       let userIds = [];
       posts.forEach((item) => {
         userIds.push(item.user_id);
       });
 
       const response = await axios.post(
-        `${process.env.AUTH_MICRO_URL}/api/getUsers`,
-        userIds
+        `${process.env.AUTH_MICRO_URL}/api/v1/user/getUsers`,
+        { userIds }
       );
 
       const users = {};
@@ -102,7 +37,8 @@ class PostController {
 
       return res.json({ postWithUsers });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      console.log("the post fetch error is", error);
+      return res.status(500).json({ message: "Something went wrong." });
     }
   }
 
@@ -110,16 +46,20 @@ class PostController {
     try {
       const authenticatedUser = req.user;
       const { title, content } = req.body;
+
       const post = await prisma.post.create({
         data: {
-          user_id: authenticatedUser.id,
+          user_id: authenticatedUser.userId,
           title,
           content,
         },
       });
 
-      return res.json({ message: "Post created successfully!", post });
+      return res
+        .status(201)
+        .json({ message: "Post created successfully!", post });
     } catch (error) {
+      console.error("Error creating post:", error);
       return res.status(500).json({ message: "Something went wrong." });
     }
   }
