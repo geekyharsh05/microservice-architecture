@@ -4,7 +4,7 @@ import isAuthenticated from "../middleware/isAuthenticated.js";
 
 const router = Router();
 
-router.get("/post", PostController.index);
-router.post("/post", isAuthenticated, PostController.store);
+router.get("/index", PostController.index);
+router.post("/store", isAuthenticated, PostController.store);
 
 export default router;
