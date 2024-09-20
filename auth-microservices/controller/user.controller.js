@@ -1,7 +1,6 @@
 import prisma from "../db/db.config.js";
 
 class UserController {
-  
   static async getUserById(req, res) {
     const { id } = req.params;
 
@@ -25,7 +24,17 @@ class UserController {
 
   static async getUsers(req, res) {
     try {
+      const { userIds } = req.body;
+      if (!userIds) {
+        return res.status(400).json({ message: "Please provide user ids" });
+      }
+
       const users = await prisma.user.findMany({
+        where: {
+          id: {
+            in: userIds,
+          },
+        },
         select: {
           id: true,
           name: true,
