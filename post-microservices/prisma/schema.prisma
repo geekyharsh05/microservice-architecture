@@ -22,4 +22,18 @@ model Post {
   updated_at DateTime @default(now())
 
   @@index([user_id])
+
+  comments Comment[]
+}
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  post_id     Int
+  user_id     String
+  content     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relation to Post and User
+  post        Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
 }
