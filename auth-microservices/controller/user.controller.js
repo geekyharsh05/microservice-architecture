@@ -53,6 +53,36 @@ class UserController {
         .json({ message: "An error occurred while fetching users" });
     }
   }
+  static async changeUserDetail(req, res) {
+    const { name, email } = req.body;
+
+    try {
+      // Validate if id, name, or email are present in the request
+      if (!userId || (!name && !email)) {
+        return res.status(400).json({
+          message: "User-id, and at least one field field is required",
+        });
+      }
+
+      // Update the user in the database
+      const updatedUser = await prisma.user.update({
+        where: { id: id },
+        data: {
+          ...(name && { name }), // Update name only if it's provided
+          ...(email && { email }), // Update email only if it's provided
+        },
+      });
+
+      return res.json({
+        message: "User details updated successfully",
+        updatedUser,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "An error occurred while updating user details",
+      });
+    }
+  }
 }
 
 export default UserController;

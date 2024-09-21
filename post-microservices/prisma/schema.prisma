@@ -22,4 +22,6 @@ model Post {
   updated_at DateTime @default(now())
 
   @@index([user_id])
+
 }
+
