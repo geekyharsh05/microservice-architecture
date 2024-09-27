@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model Comment {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  post_id    String
+  user_id    String
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([post_id])
+  @@index([user_id])
+}
